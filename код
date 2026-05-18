@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Корейский Мульт-Мир 2.0</title>
+
+<!-- Подключаем манифест PWA для превращения в приложение -->
+<link rel="manifest" href="manifest.json">
+<!-- Задаем цвет панели управления в Android -->
+<meta name="theme-color" content="#ffd86b">
+<!-- Поддержка iOS Safari -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Корейский Мульт-Мир">
+
+<style>
+:root {
+    --primary: #ffd86b;
+    --primary-hover: #ffe49a;
+    --bg-grad: linear-gradient(135deg, #a8e6ff 0%, #e2f7ff 100%);
+    --card-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-grad);
+    min-height: 100vh;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#app-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+h1 { 
+    text-align: center; 
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+#menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media(max-width: 400px) {
+    #menu { grid-template-columns: 1fr; }
+}
+
+button {
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 16px;
+    border: none;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+button:hover { 
+    background: var(--primary-hover); 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+button:active { transform: translateY(0); }
+
+.game { 
+    display: none; 
+    text-align: center; 
+}
+
+.card {
+    background: white;
+    margin: 20px 0;
+    padding: 30px 20px;
+    border-radius: 24px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+#word {
+    font-size: 36px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 15px;
+}
+
+.small { 
+    font-size: 20px; 
+    color: #444; 
+    margin: 10px 0;
+}
+
+#ex {
+    font-size: 16px;
+    color: #666;
+    background: #f7f9fa;
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+#xpBox {
+    position: sticky;
+    top: 10px;
+    align-self: flex-end;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+    margin-bottom: 10px;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.controls button { flex: 1; }
+.btn-back { background: #e0e0e0; }
+.btn-back:hover { background: #eeeeee; }
+
+.quiz-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+.quiz-btn {
+    background: #f0f3f5;
+    text-align: left;
+    font-weight: normal;
+}
+.quiz-btn:hover { background: #e2e8f0; }
+.quiz-btn.correct { background: #2ecc71 !important; color: white; }
+.quiz-btn.wrong { background: #e74c3c !important; color: white; }
+
+.progress-container {
+    width: 100%;
+    background: #e0e0e0;
+    height: 6px;
+    border-radius: 3px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    background: #4cd137;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.mode-selector {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.mode-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    background: #fff;
+    border: 2px solid var(--primary);
+}
+.mode-btn.active {
+    background: var(--primary);
+}
+</style>
+</head>
+
+<body>
+
+<div id="app-container">
+    <div id="xpBox">⭐ XP: <span id="xp">0</span></div>
+
+    <!-- МЕНЮ -->
+    <div id="menu">
+        <h1 style="grid-column: 1/-1; margin-top: 0;">🎮 Корейский Мульт-Мир 2.0</h1>
+        <button onclick="startGame(1)">🧠 Глаголы</button>
+        <button onclick="startGame(2)">🍎 Еда</button>
+        <button onclick="startGame(3)">🏠 Дом</button>
+        <button onclick="startGame(4)">🚗 Транспорт</button>
+        <button onclick="startGame(5)">🎨 Цвета</button>
+        <button onclick="startGame(6)">⏰ Время</button>
+        <button onclick="startGame(7)">👨‍👩‍👧‍👦 Люди</button>
+        <button onclick="startGame(8)">🌦 Погода</button>
+    </div>
+
+    <!-- ИГРОВОЙ ЭКРАН -->
+    <div id="game" class="game">
+        <h2 id="title" style="margin-bottom: 5px;"></h2>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" id="modeLearn" onclick="changeMode('learn')">📖 Карточки</button>
+            <button class="mode-btn" id="modeQuiz" onclick="changeMode('quiz')">🧩 Тест</button>
+        </div>
+
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <div class="card">
+            <div id="word"></div>
+            <div id="ru" class="small"></div>
+            <div id="ex" class="small"></div>
+            <div id="quizOptions" class="quiz-options" style="display: none;"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-back" onclick="back()">🏠 Меню</button>
+            <button id="btnSpeak" onclick="speak()">🔊 Озвучка</button>
+            <button id="btnNext" onclick="next()">➡ Далее</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const games = {
+1: [["가다","идти","저는 학교에 가요"],["오다","приходить","친구가 와요"],["먹다","есть","밥을 먹어요"],["마시다","пить","물을 마셔요"],["보다","смотреть","영화를 봐요"],["듣다","слушать","음악을 들어요"],["읽다","читать","책을 읽어요"],["쓰다","писать","편지를 써요"],["공부하다","учиться","한국어를 공부해요"],["자다","спать","잠을 자요"],["일어나다","вставать","아침에 일어나요"],["만나다","встречать","친구를 만나요"],["좋아하다","любить","사과를 좋아해요"],["싫어하다","не любить","김치를 싫어해요"],["사다","покупать","책을 사요"],["팔다","продавать","가게에서 팔아요"],["살다","жить","한국에 살아요"],["일하다","работать","회사에서 일해요"],["쉬다","отдыхать","집에서 쉬어요"],["배우다","учить","한국어를 배워요"],["가르치다","преподавать","선생님이 가르쳐요"],["이야기하다","разговаривать","친구와 이야기해요"],["전화하다","звонить","엄마에게 전화해요"],["운동하다","заниматься спортом","운동을 해요"],["걷다","ходить","길을 걸어요"],["앉다","садиться","의자에 앉아요"],["서다","стоять","서 있어요"],["닫다","закрывать","문을 닫아요"],["열다","открывать","창문을 열어요"],["기다리다","ждать","버스를 기다려요"],["주다","давать","선물을 줘요"],["받다","получать","편지를 받아요"],["만들다","делать","요리를 만들어요"],["요리하다","готовить","음식을 요리해요"],["청소하다","убираться","방을 청소해요"],["씻다","мыть","손을 씻어요"],["입다","надевать","옷을 입어요"],["벗다","снимать одежду","옷을 벗어요"],["타다","садиться в транспорт","버스를 타요"],["내리다","выходить","버스에서 내려요"],["시작하다","начинать","수업을 시작해요"],["끝나다","заканчиваться","수업이 끝나요"],["배고프다","быть голодным","배고па요"],["목마르다","хотеть пить","목말라요"],["아프다","болеть","머리가 아па요"],["피곤하다","устал","피곤해요"],["행복하다","счастлив","행복해요"],["슬프다","грустный","슬퍼요"],["재ми있다","интересно","재ми있어요"],["예쁘다","красивый","예뻐요"],["크다","большой","커요"],["작다","маленький","작아요"],["길다","длинный","길어요"],["짧다","короткий","짧아요"],["많다","много","많아요"],["적다","мало","적어요"],["빠르다","быстрый","빨라요"],["느리다","медленный","느려요"],["덥다","жарко","더워요"],["춥다","холодно","추워요"],["따뜻하다","тёплый","따뜻해요"],["시원하다","прохладный","시원해요"],["맑다","ясно","날씨가 맑아요"],["흐리다","облачно","날씨가 흐려요"]],
+2: [["음식","еда","음식을 먹어요"],["밥","рис/еда","밥을 먹어요"],["물","вода","물을 마셔요"],["우유","молоко","우유를 마셔요"],["커피","кофе","커피를 마셔요"],["차","чай","차를 마셔요"],["사과","яблоко","사과를 먹어요"],["바나나","банан","바나на를 먹어요"],["빵","хлеб","빵을 먹어요"],["김치","кимчи","김치를 먹어요"],["고기","мясо","고기를 먹어요"],["과일","фрукты","과일을 먹어요"],["채소","овощи","채소를 먹어요"]],
+3: [["집","дом","집에 가요"],["방","комната","방에 있어요"],["부엌","кухня","부엌에서 요리해요"],["화장실","туалет","화장실에 가요"],["침대","кровать","침대에서 자요"],["의자","стул","의자에 앉아요"],["책상","стол","책상 위에 있어요"],["문","дверь","문을 열어요"],["창문","окно","창문을 열어요"],["냉장고","холодильник","냉장고에 있어요"],["책","книга","책을 읽어요"],["공책","тетрадь","공책에 써요"],["연필","карандаш","연필로 써요"],["가방","сумка","가방이 있어요"]],
+4: [["버스","автобус","버스를 타요"],["지하철","метро","지하철을 타요"],["택시","такси","택시를 타요"],["기차","поезд","기차를 타요"],["비행기","самолёт","비행기를 타요"],["자동차","машина","자동차를 타요"],["자전거","велосипед","자전거를 타요"],["길","дорога","길을 걸어요"],["역","станция","역에 가요"],["표","билет","표를 사요"],["식당","ресторан","식당에 가요"],["카페","кафе","카페에 가요"],["병원","больница","병원에 가요"],["은행","банк","은행에 가요"],["공원","парк","공원에 가요"],["시장","рынок","시장에서 사요"],["편의점","магазин","편의점에 가요"],["도서관","библиотека","도서관에서 공부해요"]],
+5: [["빨간색","красный","빨간색이에요"],["파란색","синий","파란색이에요"],["노란색","жёлтый","노란색이에요"],["검은색","чёрный","검은색이에요"],["흰색","белый","흰색이에요"],["초록색","зелёный","초록색이에요"],["분홍색","розовый","분홍색이에요"],["보라색","фиолетовый","보라색이에요"],["회색","серый","회색이에요"],["갈색","коричневый","갈색이에요"]],
+6: [["오늘","сегодня","오늘 학교 가요"],["내일","завтра","내일 만나요"],["어제","вчера","어제 공부했어요"],["지금","сейчас","지금 공부해요"],["아침","утро","아침에 일어나요"],["점심","обед","점심 먹어요"],["저녁","вечер","저녁 먹어요"],["밤","ночь","밤에 자요"],["나중에","потом","나중에 만나요"],["먼저","сначала","먼저 공부해요"],["이후에","после","이후에 가요"],["전에","до","전에 했어요"],["항상","всегда","항상 공부해요"],["자주","часто","자주 만나요"],["가끔","иногда","가끔 가요"],["절대","никогда","절대 안 해요"]],
+7: [["학교","школа","학교에 가요"],["학생","ученик","저는 학생이에요"],["선생님","учитель","선생님이에요"],["친구","друг","친구를 만나요"],["가족","семья","가족이 있어요"],["엄마","мама","엄마를 사랑해요"],["아빠","папа","아빠를 봐요"],["언니","старшая сестра","언니가 있어요"],["오빠","старший брат","오빠가 있어요"],["누나","старшая сестра","누나가 있어요"],["형","старший брат","형이 있어요"],["동생","младший брат/сестра","동생이 있어요"],["할머니","배부шка","할머니를 봐요"],["할아버지","дедушка","할아버지를 봐요"]],
+8: [["비","дождь","비가 와요"],["눈","снег","눈이 와요"],["바람","ветер","바람이 불어요"],["봄","весна","봄이에요"],["여름","лето","여름이에요"],["가을","осень","가을이에요"],["겨울","зима","겨울이에요"]]
+};
+
+let currentCategory = [];
+let currentIndex = 0;
+let xp = 0;
+let currentMode = 'learn';
+let currentCategoryFullList = [];
+
+function shuffle(array) {
+    let m = array.length, t, i;
+    while (m) {
+        i = Math.floor(Math.random() * m--);
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
+}
+
+function addXP(amount = 10){
+    xp += amount;
+    document.getElementById("xp").innerText = xp;
+}
+
+function startGame(n){
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    currentCategory = shuffle([...games[n]]);
+    currentCategoryFullList = [...games[n]];
+    currentIndex = 0;
+    changeMode('learn');
+}
+
+function changeMode(mode) {
+    currentMode = mode;
+    document.getElementById("modeLearn").classList.toggle("active", mode === 'learn');
+    document.getElementById("modeQuiz").classList.toggle("active", mode === 'quiz');
+    loadWord();
+}
+
+function loadWord(){
+    if (currentCategory.length === 0) return;
+    let w = currentCategory[currentIndex];
+    document.getElementById("word").innerText = "🇰🇷 " + w[0];
+    
+    let progress = ((currentIndex) / currentCategory.length) * 100;
+    document.getElementById("progressBar").style.width = progress + "%";
+
+    if (currentMode === 'learn') {
+        document.getElementById("ru").style.display = "block";
+        document.getElementById("ex").style.display = "block";
+        document.getElementById("quizOptions").style.display = "none";
+        document.getElementById("ru").innerText = "🇷🇺 " + w[1];
+        document.getElementById("ex").innerText = "💬 " + w[2];
+        document.getElementById("btnNext").style.display = "inline-block";
+    } else {
+        document.getElementById("ru").style.display = "none";
+        document.getElementById("ex").style.display = "none";
+        document.getElementById("quizOptions").style.display = "grid";
+        document.getElementById("btnNext").style.display = "none";
+        generateQuizOptions(w[1]);
+    }
+    speak();
+}
+
+function generateQuizOptions(correctAnswer) {
+    let optionsContainer = document.getElementById("quizOptions");
+    optionsContainer.innerHTML = "";
+    let wrongOptions = currentCategoryFullList.map(item => item[1]).filter(ans => ans !== correctAnswer);
+    shuffle(wrongOptions);
+    let chosenOptions = wrongOptions.slice(0, 3);
+    chosenOptions.push(correctAnswer);
+    shuffle(chosenOptions);
+    
+    chosenOptions.forEach(opt => {
+        let btn = document.createElement("button");
+        btn.className = "quiz-btn";
+        btn.innerText = opt;
+        btn.onclick = function() { checkAnswer(btn, opt, correctAnswer); };
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function checkAnswer(selectedBtn, selectedAnswer, correctAnswer) {
+    let buttons = document.querySelectorAll(".quiz-btn");
+    buttons.forEach(btn => btn.disabled = true);
+    if (selectedAnswer === correctAnswer) {
+        selectedBtn.classList.add("correct");
+        addXP(15);
+    } else {
+        selectedBtn.classList.add("wrong");
+        buttons.forEach(btn => {
+            if (btn.innerText === correctAnswer) btn.classList.add("correct");
+        });
+    }
+    setTimeout(() => {
+        document.getElementById("btnNext").style.display = "inline-block";
+    }, 600);
+}
+
+function next(){
+    currentIndex++;
+    if(currentIndex >= currentCategory.length) {
+        alert("🎉 Категория пройдена! Перемешиваем заново.");
+        shuffle(currentCategory);
+        currentIndex = 0;
+    }
+    loadWord();
+    if (currentMode === 'learn') addXP(10);
+}
+
+function speak(){
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        let wordText = currentCategory[currentIndex][0];
+        let u = new SpeechSynthesisUtterance(wordText);
+        u.lang = "ko-KR";
+        u.rate = 0.85;
+        window.speechSynthesis.speak(u);
+    }
+}
+
+function back(){
+    window.speechSynthesis.cancel();
+    document.getElementById("menu").style.display = "block";
+    document.getElementById("game").style.display = "none";
+}
+
+// РЕГИСТРАЦИЯ SERVICE WORKER ДЛЯ РАБОТЫ ОФЛАЙН
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('Service Worker успешно запущен', reg))
+      .catch(err => console.log('Ошибка при запуске Service Worker', err));
+  });
+}
+</script>
+
+</body>
+</html>
